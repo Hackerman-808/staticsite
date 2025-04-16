@@ -14,6 +14,7 @@ class HTMLNode:
         if self.props is None:
             return ""
         props_str = ""
+        
         for k, v in self.props.items():
             props_str += f' {k}="{v}"'
 
@@ -35,3 +36,22 @@ class LeafNode(HTMLNode):
         if not self.tag:
             return f"{self.value}"
         return f'<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>'
+
+
+class ParentNode(HTMLNode):
+    def __init__(self, tag, children, props=None):
+        super().__init__(tag, None, children, props)
+
+
+    def to_html(self):
+        if not self.tag:
+            raise ValueError("No tag provided.")
+        if not self.children:
+            raise ValueError("No children provided.")
+        html = f"<{self.tag}{self.props_to_html()}>"
+        
+        for child in self.children:
+            html += child.to_html()
+        
+        html += f"</{self.tag}>"
+        return html
