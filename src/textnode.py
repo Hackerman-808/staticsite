@@ -146,3 +146,63 @@ def extract_markdown_images(text):
 def extract_markdown_links(text):
 	found_items = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
 	return input_valid_for_extractors(found_items)
+
+
+def split_nodes_image(old_nodes):
+	resultlst = []
+
+	for node in old_nodes:
+		try:
+			extractions = extract_markdown_images(node.text)
+		except Exception:
+			print(f"\nAn input was either improperly formatted or no images or links where found - returning input with other potential results.\n")
+			resultlst.extend([node])
+			continue
+		
+		remaining = node.text
+
+		for e in extractions:
+			before, after = remaining.split(f"![{e[0]}]({e[1]})", 1)
+			if len(before) == 0:
+				resultlst.extend([TextNode(e[0], TextType.IMAGE, e[1])])
+			else:
+				resultlst.extend([TextNode(before, TextType.TEXT), TextNode(e[0], TextType.IMAGE, e[1])])
+			remaining = after
+			continue
+		if len(remaining) > 0:
+			resultlst.extend([TextNode(remaining, TextType.TEXT)])
+	return resultlst
+
+
+def split_nodes_link(old_nodes):
+	# yes, copy paste, I know - can't be bothered.
+	resultlst = []
+
+	for node in old_nodes:
+		try:
+			extractions = extract_markdown_links(node.text)
+		except Exception:
+			print(f"\nAn input was either improperly formatted or no links where found - returning input with other potential results.\n")
+			resultlst.extend([node])
+			continue
+		
+		remaining = node.text
+
+		for e in extractions:
+			before, after = remaining.split(f"[{e[0]}]({e[1]})", 1)
+			if len(before) == 0:
+				resultlst.extend([TextNode(e[0], TextType.LINK, e[1])])
+			else:
+				resultlst.extend([TextNode(before, TextType.TEXT), TextNode(e[0], TextType.LINK, e[1])])
+			remaining = after
+			continue
+		if len(remaining) > 0:
+			resultlst.extend([TextNode(remaining, TextType.TEXT)])
+	return resultlst
+
+
+# print(split_nodes_image([TextNode("This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another " \
+# 	"![second image](https://i.imgur.com/3elNhQu.png) with some text at the end",
+#     TextType.TEXT, ), TextNode(
+# 	"This is text without a link to boot dev nor to youtube.", 
+# 	TextType.TEXT, )]))
