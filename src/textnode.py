@@ -206,3 +206,18 @@ def split_nodes_link(old_nodes):
 #     TextType.TEXT, ), TextNode(
 # 	"This is text without a link to boot dev nor to youtube.", 
 # 	TextType.TEXT, )]))
+
+
+def text_to_textnodes(mkdntxt):
+    nodes = [TextNode(mkdntxt, TextType.TEXT)]
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    return nodes
+
+print(text_to_textnodes(
+	"[link](https://boot.dev) This is **text** with an _italic_ word and a `code block` and an " \
+	"![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)")
+)
